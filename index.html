@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sunshine Letter</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: "Courier New", monospace;
+    background-color: #0d1117;
+    color: #c9d1d9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  #intro, #letter {
+    display: none;
+    text-align: center;
+    max-width: 700px;
+    z-index: 10;
+  }
+
+  #intro.active, #letter.active {
+    display: block;
+  }
+
+  h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+  }
+
+  .nickname {
+    color: #58a6ff;
+    display: block;
+    margin: 10px 0;
+    font-size: 1.5em;
+  }
+
+  button {
+    margin-top: 30px;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: #58a6ff;
+    color: #0d1117;
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.2s;
+  }
+
+  button:hover {
+    transform: scale(1.1);
+  }
+
+  #console {
+    text-align: left;
+    border-left: 3px solid #58a6ff;
+    padding-left: 20px;
+    white-space: pre-wrap;
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 10px;
+    background-color: #58a6ff;
+    animation: blink 1s step-start infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* Password Modal */
+  .modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .modal-content {
+    background-color: #0d1117;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    color: #c9d1d9;
+    border: 2px solid #58a6ff;
+    animation: popIn 0.5s ease;
+  }
+
+  .modal-content input {
+    padding: 10px;
+    font-size: 1.1em;
+    border-radius: 10px;
+    border: 1px solid #58a6ff;
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .modal-content button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: #58a6ff;
+    color: #0d1117;
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.2s;
+  }
+
+  .modal-content button:hover {
+    transform: scale(1.1);
+  }
+
+  @keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+/* Floating colorful hearts + words */
+#hearts-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.heart {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.3em;
+  font-weight: bold;
+  opacity: 0.9;
+  animation: floatSides linear forwards;
+  z-index: 0;
+  text-shadow: 0 0 10px rgba(255,255,255,0.8);
+}
+
+@keyframes floatSides {
+  0% {
+    transform: translateY(100vh);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-10vh);
+    opacity: 0;
+  }
+}
+
+</style>
+</head>
+<body>
+<div id="hearts-container"></div>
+
+<!-- Intro Page -->
+<div id="intro" class="active">
+  <h1>Hey Partner in Crime!</h1>
+  <span class="nickname">Batman</span>
+  <span class="nickname">Big Bear</span>
+  <button id="startBtn">Open Your Letter 💛</button>
+</div>
+
+<!-- Password Modal -->
+<div id="passwordModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h2>Enter the secret code 💛</h2>
+    <input type="password" id="passwordInput" placeholder="Type here..." />
+    <button id="submitPassword">Open Letter ✨</button>
+    <p id="errorMessage" style="color:red; display:none;">Oops! Wrong code 😅</p>
+  </div>
+</div>
+
+<!-- Letter Page -->
+<div id="letter">
+  <div id="console"></div>
+</div>
+
+<div id="hearts-container"></div>
+
+<script>
+// Elements
+const startBtn = document.getElementById('startBtn');
+const intro = document.getElementById('intro');
+const letter = document.getElementById('letter');
+const modal = document.getElementById('passwordModal');
+const submitBtn = document.getElementById('submitPassword');
+const passwordInput = document.getElementById('passwordInput');
+const errorMsg = document.getElementById('errorMessage');
+
+// Music
+const music = new Audio('112_Anne-Marie-2002.mp3');
+music.loop = true;
+
+// Show password modal on start
+startBtn.addEventListener('click', () => {
+  modal.style.display = "flex";
+});
+
+// Password check
+submitBtn.addEventListener("click", () => {
+  if (passwordInput.value === "sunshine") {
+    modal.style.display = "none";
+    intro.classList.remove('active');
+    letter.classList.add('active');
+    startTyping();
+  } else {
+    errorMsg.style.display = "block";
+    passwordInput.value = "";
+    passwordInput.focus();
+  }
+});
+
+// Letter lines
+const lines = [
+  "> reconnecting...",
+  "> connection found: October 7, 2023",
+  "> initializing memories...",
+  "",
+  "> My Sunshine, when you smile, I shine ",
+  "> You brought light when I needed it most ",
+  "> October 7 will always be special to us ",
+  "",
+  "> system status: heart full 💖",
+  "",
+  "> --- A Little LETTER ---",
+  "",
+  "Hi babe",
+  "",
+  "Remember the night we met again? The way you spoke so patiently to my mom on the call...",
+  "I admired you, not just for your words, but for the calm and kindness behind them.",
+  "",
+  "Fast forward to that moment near Joina... what a beautiful man I saw that day.",
+  "I thought to myself, 'wow, not the little 5-year-old I used to play dolls with — but a handsome, well-groomed gentleman.'",
+  "Every smile that came from your face felt like sunshine. The way your teeth complimented your smile honestly made my heart happy ❤️.",
+  "",
+  "We connected right from the start — it felt like a reunion written in light.",
+  "From your small acts of kindness — helping me choose earrings because I wanted mine to outshine my mom’s (haha 😅) —",
+  "to the moment you helped me take off my shoes and made me feel comfortable in my tomboy ways... I loved every second of that night.",
+  "",
+  "I was almost falling apart back then, but Jehovah gave me you right on time. A lovely friend — little did I know you would one day ask me out in the sweetest way.",
+  "You didn’t just ask me to be your girlfriend, but your partner in crime. I always wondered why until you showed me what being with a true partner feels like.",
+  "",
+  "You have always been my brightest and favorite light, even on sad days.",
+  "When life feels heavy or dark, thinking of you brings warmth and peace.",
+  "Your beautiful energy and positivity fill my heart in ways I can’t explain.",
+  "",
+  "I wish I could take away every bit of sadness you feel and replace it with love, laughter, and peace.",
+  "You are stronger than you know, and even on your lowest days, your light still reaches me .",
+  "",
+  "Thank you for being my partner in crime, my sunshine, my best friend, my love, and everything in between 💖.",
+  "I hope this letter reminds you that you are amazing, Kevin, cherished, deeply loved, and adored by a soft girl who is endlessly proud of you.",
+  "",
+  "Happy Sunshine Day to us 💛",
+  "",
+  "Love Mikkie 💖",
+];
+
+const consoleEl = document.getElementById('console');
+let currentLine = 0;
+let currentChar = 0;
+
+const heartsContainer = document.getElementById("hearts-container");
+
+music.addEventListener("play", () => {
+  const heartInterval = setInterval(createHeart, 800);
+
+  music.addEventListener("ended", () => {
+    clearInterval(heartInterval);
+  });
+});
+
+function createHeart() {
+  const heart = document.createElement("div");
+  heart.classList.add("heart");
+
+  const colors = ["#FF6B6B", "#FFD93D", "#6BCB77", "#4D96FF", "#FF6FFF"];
+  const words = ["💖", "💛", "💗", "light", "sunshine", "my color"];
+
+  heart.textContent = words[Math.floor(Math.random() * words.length)];
+  heart.style.color = colors[Math.floor(Math.random() * colors.length)];
+
+  // Float along the sides only
+  if (Math.random() < 0.5) {
+    heart.style.left = (Math.random() * 8) + "vw";
+  } else {
+    heart.style.left = (90 + Math.random() * 8) + "vw";
+  }
+
+  const size = 16 + Math.random() * 10;
+  heart.style.fontSize = size + "px";
+  heart.style.animationDuration = (7 + Math.random() * 6) + "s";
+
+  heartsContainer.appendChild(heart);
+  setTimeout(() => heart.remove(), 13000);
+}
+
+
+// Typing function
+function startTyping() {
+  if (currentLine < lines.length) {
+    if (currentChar < lines[currentLine].length) {
+      consoleEl.innerHTML += lines[currentLine][currentChar++];
+      consoleEl.innerHTML += '<span class="cursor"></span>';
+      setTimeout(() => {
+        consoleEl.innerHTML = consoleEl.innerHTML.slice(0, -19);
+        startTyping();
+      }, 70);
+    } else {
+      consoleEl.innerHTML += '\n';
+      currentChar = 0;
+      currentLine++;
+      setTimeout(startTyping, 400);
+    }
+  } else {
+    // Letter finished
+    music.play();
+    setInterval(createHeart, 300);
+  }
+}
+</script>
+
+</body>
+</html>
